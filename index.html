@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Computing Exam Prep</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div id="start-screen" class="card fade-in">
+            <h1>Simulatore test moodle</h1>
+            <p class="subtitle">Mettiti alla prova con 20 domande casuali tratte dagli esami.</p>
+
+            <button id="start-btn" class="btn-primary">Inizia Esame</button>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="header-stats">
+                <span id="question-counter">Domanda 1/20</span>
+                <span id="score-counter">Punteggio: 0</span>
+            </div>
+
+            <div class="card" id="question-card">
+                <h2 id="question-text">Caricamento domanda...</h2>
+                <div id="options-container" class="options-grid">
+                    </div>
+            </div>
+
+            <div id="feedback-area" class="feedback-box hidden">
+                <div class="feedback-header">
+                    <span id="feedback-icon"></span>
+                    <strong id="feedback-title"></strong>
+                </div>
+                <p id="feedback-text"></p>
+                <button id="next-btn" class="btn-primary">Prossima Domanda</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="card hidden">
+            <div id="result-icon"></div>
+            <h1 id="result-title">Esame Completato</h1>
+            <p id="result-message"></p>
+            <div class="score-display">
+                <span id="final-score">0</span> / 20
+            </div>
+            <p id="percentage-display"></p>
+            <button onclick="location.reload()" class="btn-secondary">Riprova Esame</button>
+        </div>
+
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
