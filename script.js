@@ -260,25 +260,113 @@ async function loadLeaderboard(containerId = 'leaderboard-list') {
     list.innerHTML = '<p style="color:#6b7280; font-size:0.9rem;">Aggiornamento...</p>';
 
     try {
-        const { data, error } = await supabaseClient
-            .from('leaderboard')
-            .select('*')
-            .order('best_score', { ascending: false })
-            .limit(5);
+        // Recupera tutti i risultati raggruppati per user_id con informazioni utente
+        const { data: examResults, error: examError } = await supabaseClient
+            .from('exam_results')
+            .select('user_id, score, total_questions');
 
-        if (error) {
-            console.error('Errore leaderboard:', error);
+        if (examError) {
+            console.error('Errore caricamento risultati:', examError);
             list.innerHTML = '<p>Classifica non disponibile.</p>';
             return;
         }
 
-        if (!data || data.length === 0) {
+        if (!examResults || examResults.length === 0) {
             list.innerHTML = '<p style="color:#6b7280; font-size:0.9rem;">Nessun risultato ancora.</p>';
             return;
         }
 
+        // Calcola la media per ogni utente
+        const userStats = {};
+        
+        examResults.forEach(result => {
+            const userId = result.user_id;
+            if (!userStats[userId]) {
+                userStats[userId] = {
+                    scores: [],
+                    totalQuestions: result.total_questions || 20
+                };
+            }
+            userStats[userId].scores.push(result.score || 0);
+        });
+
+        // Calcola la media aritmetica per ogni utente
+        const leaderboardData = [];
+        
+        for (const [userId, stats] of Object.entries(userStats)) {
+            const avgScore = stats.scores.reduce((sum, score) => sum + score, 0) / stats.scores.length;
+            const roundedAvg = Math.round(avgScore * 10) / 10; // Arrotonda a 1 decimale
+            
+            leaderboardData.push({
+                user_id: userId,
+                average_score: roundedAvg,
+                total_tests: stats.scores.length
+            });
+        }
+
+        // Ordina per media decrescente, poi per numero di test (in caso di parità, chi ha più test è più in alto)
+        leaderboardData.sort((a, b) => {
+            if (Math.abs(b.average_score - a.average_score) < 0.01) {
+                // Stessa media (con tolleranza per floating point), ordina per numero di test decrescente
+                return b.total_tests - a.total_tests;
+            }
+            // Altrimenti ordina per media decrescente
+            return b.average_score - a.average_score;
+        });
+
+        // Prendi i top 5
+        const topUsers = leaderboardData.slice(0, 5);
+        const userIds = topUsers.map(u => u.user_id);
+
+        // Recupera username e avatar dal primo risultato di ogni utente (sono salvati in exam_results)
+        const { data: latestResults, error: latestError } = await supabaseClient
+            .from('exam_results')
+            .select('user_id, username, avatar_seed, avatar_color')
+            .in('user_id', userIds)
+            .order('created_at', { ascending: false });
+
+        // Crea una mappa per username e avatar per user_id
+        const userInfoMap = {};
+        if (latestResults) {
+            latestResults.forEach(result => {
+                if (!userInfoMap[result.user_id]) {
+                    userInfoMap[result.user_id] = {
+                        username: result.username || `Utente ${result.user_id.substring(0, 8)}`,
+                        avatar_seed: result.avatar_seed || 'default',
+                        avatar_color: result.avatar_color || 'f3f4f6'
+                    };
+                }
+            });
+        }
+
+        // Se è l'utente corrente, usa i suoi metadata se non presenti nel DB
+        if (currentUser && !userInfoMap[currentUser.id]) {
+            const meta = currentUser.user_metadata || {};
+            userInfoMap[currentUser.id] = {
+                username: meta.username || 'Utente',
+                avatar_seed: meta.avatar_seed || 'default',
+                avatar_color: meta.avatar_color || 'f3f4f6'
+            };
+        }
+
+        // Combina i dati
+        const leaderboardWithUserInfo = topUsers.map(user => {
+            const userInfo = userInfoMap[user.user_id] || {
+                username: `Utente ${user.user_id.substring(0, 8)}`,
+                avatar_seed: 'default',
+                avatar_color: 'f3f4f6'
+            };
+            return {
+                ...user,
+                username: userInfo.username,
+                avatar_seed: userInfo.avatar_seed,
+                avatar_color: userInfo.avatar_color
+            };
+        });
+
+        // Renderizza la classifica
         list.innerHTML = '';
-        data.forEach((row, index) => {
+        leaderboardWithUserInfo.forEach((row, index) => {
             const div = document.createElement('div');
             div.className = 'leaderboard-row';
             
@@ -296,10 +384,11 @@ async function loadLeaderboard(containerId = 'leaderboard-list') {
                     <img src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=${avatarSeed}&backgroundColor=${avatarColor}" style="width:28px; height:28px; border-radius:50%; background:#fff; border:1px solid #ddd;">
                     <span style="font-weight:500;">${row.username || 'Anonimo'}</span>
                 </div>
-                <strong>${row.best_score || 0}/20</strong>
+                <strong>${row.average_score.toFixed(1)}/20</strong>
             `;
             list.appendChild(div);
         });
+
     } catch (err) {
         console.error('Errore caricamento leaderboard:', err);
         list.innerHTML = '<p>Errore caricamento classifica.</p>';
@@ -528,8 +617,17 @@ async function showResults() {
     if (currentUser && supabaseClient && savingStatus) {
         savingStatus.textContent = "Salvataggio risultati nel cloud...";
         
+        // Recupera username e avatar dai metadata dell'utente
+        const meta = currentUser.user_metadata || {};
+        const username = meta.username || 'Utente';
+        const avatarSeed = meta.avatar_seed || 'default';
+        const avatarColor = meta.avatar_color || 'f3f4f6';
+        
         supabaseClient.from('exam_results').insert({
             user_id: currentUser.id,
+            username: username,
+            avatar_seed: avatarSeed,
+            avatar_color: avatarColor,
             score: score,
             total_questions: total,
             is_perfect: (score === total)
