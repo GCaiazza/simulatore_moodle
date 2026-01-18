@@ -119,3 +119,23 @@ h2 { font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 600; line-height: 1
 /* RESULT SCREEN */
 .score-display { font-size: 3rem; font-weight: 800; color: var(--primary-color); margin: 1rem 0; }
 #result-icon { font-size: 4rem; margin-bottom: 1rem; }
+
+/* NAVIGAZIONE */
+.navigation-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    min-height: 50px; /* Riserva spazio per evitare salti */
+}
+
+/* Assicuriamoci che il bottone Indietro sia meno evidente */
+#prev-btn {
+    background-color: transparent;
+    border: 1px solid #d1d5db;
+    color: var(--text-secondary);
+}
+#prev-btn:hover {
+    background-color: #f3f4f6;
+    border-color: var(--text-secondary);
+}
