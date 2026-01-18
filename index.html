@@ -16,7 +16,6 @@
         <div id="start-screen" class="card fade-in">
             <h1>Simulatore test moodle</h1>
             <p class="subtitle">Mettiti alla prova con 20 domande casuali tratte dagli esami.</p>
-
             <button id="start-btn" class="btn-primary">Inizia Esame</button>
         </div>
 
@@ -47,13 +46,12 @@
                 <button id="prev-btn" class="btn-secondary hidden" style="width: auto; margin-top:0;">⬅ Indietro</button>
                 <button id="next-btn" class="btn-primary hidden" style="width: auto;">Prossima ➡</button>
             </div>
-
-        <div id="result-screen" class="card hidden">
-            <div id="result-icon"></div>
+        </div> <div id="result-screen" class="card hidden">
+            <div id="result-icon" style="font-size: 4rem; margin-bottom: 1rem;"></div>
             <h1 id="result-title">Esame Completato</h1>
             <p id="result-message"></p>
             <div class="score-display">
-                <span id="final-score">0</span> / 20
+                <span id="final-score">0</span> / <span id="total-questions-display">20</span>
             </div>
             <p id="percentage-display"></p>
             <button onclick="location.reload()" class="btn-secondary">Riprova Esame</button>

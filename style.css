@@ -1,3 +1,4 @@
+/* --- 1. VARIABILI E RESET --- */
 :root {
     --bg-color: #f3f4f6;
     --card-bg: #ffffff;
@@ -33,7 +34,7 @@ body {
     margin: 0 auto;
 }
 
-/* CARDS */
+/* --- 2. CARD E TIPOGRAFIA --- */
 .card {
     background: var(--card-bg);
     padding: 2rem;
@@ -47,12 +48,7 @@ h1 { font-size: 1.8rem; margin-bottom: 0.5rem; font-weight: 700; }
 h2 { font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 600; line-height: 1.5; color: #1f2937; }
 .subtitle { color: var(--text-secondary); margin-bottom: 2rem; }
 
-/* UTILS */
-.hidden { display: none !important; }
-.fade-in { animation: fadeIn 0.5s ease-in; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* BUTTONS */
+/* --- 3. BOTTONI --- */
 .btn-primary, .btn-secondary {
     display: inline-block;
     width: 100%;
@@ -67,10 +63,11 @@ h2 { font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 600; line-height: 1
 
 .btn-primary { background-color: var(--primary-color); color: white; }
 .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+
 .btn-secondary { background-color: #e5e7eb; color: var(--text-primary); margin-top: 1rem; }
 .btn-secondary:hover { background-color: #d1d5db; }
 
-/* OPTIONS GRID */
+/* --- 4. GRIGLIA OPZIONI --- */
 .options-grid { display: flex; flex-direction: column; gap: 12px; }
 
 .option-btn {
@@ -88,11 +85,11 @@ h2 { font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 600; line-height: 1
 .option-btn:hover { border-color: var(--primary-color); background-color: #eff6ff; }
 .option-btn.selected { border-color: var(--primary-color); background-color: #eff6ff; }
 
-/* FEEDBACK STATES */
+/* Stati Feedback (Verde/Rosso) */
 .option-btn.correct { border-color: var(--success-text); background-color: var(--success-bg); color: var(--success-text); }
 .option-btn.wrong { border-color: var(--error-text); background-color: var(--error-bg); color: var(--error-text); opacity: 0.7; }
 
-/* FEEDBACK AREA */
+/* --- 5. AREA FEEDBACK --- */
 .feedback-box {
     margin-top: 1.5rem;
     padding: 1.5rem;
@@ -107,35 +104,53 @@ h2 { font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 600; line-height: 1
 .feedback-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; font-size: 1.1rem; }
 #feedback-text { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem; }
 
-/* PROGRESS */
+/* --- 6. PROGRESS BAR E INFO --- */
 .progress-container { width: 100%; height: 6px; background-color: #e5e7eb; border-radius: 3px; margin-bottom: 1rem; overflow: hidden; }
 .progress-bar { height: 100%; background-color: var(--primary-color); width: 0%; transition: width 0.3s ease; }
 .header-stats { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; font-weight: 600; }
 
-/* BADGES */
-.info-badges { display: flex; gap: 10px; justify-content: center; margin-bottom: 2rem; }
-.badge { background: #e0f2fe; color: #0369a1; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
-
-/* RESULT SCREEN */
+/* --- 7. RISULTATI --- */
 .score-display { font-size: 3rem; font-weight: 800; color: var(--primary-color); margin: 1rem 0; }
 #result-icon { font-size: 4rem; margin-bottom: 1rem; }
 
-/* NAVIGAZIONE */
+/* --- 8. NAVIGAZIONE (SOLUZIONE FLEXBOX DEFINITIVA) --- */
 .navigation-area {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex;          /* Usa Flexbox per allineare */
+    width: 100%;
     margin-top: 20px;
-    min-height: 50px; /* Riserva spazio per evitare salti */
+    min-height: 50px;
+    align-items: center;    /* Centra verticalmente i bottoni */
 }
 
-/* Assicuriamoci che il bottone Indietro sia meno evidente */
+/* Tasto Indietro */
 #prev-btn {
+    /* Stile specifico */
     background-color: transparent;
     border: 1px solid #d1d5db;
     color: var(--text-secondary);
+    
+    /* Posizionamento */
+    width: auto !important; /* IMPORTANTE: Sovrascrive il 100% width generico */
+    margin-right: auto;     /* Opzionale, ma aiuta la stabilità */
+    margin-top: 0;          /* Rimuove il margine ereditato da btn-secondary */
 }
+
 #prev-btn:hover {
     background-color: #f3f4f6;
     border-color: var(--text-secondary);
 }
+
+/* Tasto Prossima */
+#next-btn {
+    /* IL SEGRETO È QUI: margin-left: auto spinge il bottone tutto a destra */
+    margin-left: auto;      
+    
+    /* Posizionamento */
+    width: auto !important; /* IMPORTANTE: Deve essere auto, non 100% */
+    margin-top: 0;          /* Rimuove margini indesiderati */
+}
+
+/* --- 9. UTILITIES --- */
+.hidden { display: none !important; }
+.fade-in { animation: fadeIn 0.5s ease-in; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
