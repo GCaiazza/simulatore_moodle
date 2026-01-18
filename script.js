@@ -260,121 +260,25 @@ async function loadLeaderboard(containerId = 'leaderboard-list') {
     list.innerHTML = '<p style="color:#6b7280; font-size:0.9rem;">Aggiornamento...</p>';
 
     try {
-        // Recupera tutti i risultati raggruppati per user_id con informazioni utente
-        const { data: examResults, error: examError } = await supabaseClient
-            .from('exam_results')
-            .select('user_id, score, total_questions');
+        const { data, error } = await supabaseClient
+            .from('leaderboard')
+            .select('*')
+            .order('best_score', { ascending: false })
+            .limit(5);
 
-        if (examError) {
-            console.error('Errore caricamento risultati:', examError);
+        if (error) {
+            console.error('Errore leaderboard:', error);
             list.innerHTML = '<p>Classifica non disponibile.</p>';
             return;
         }
 
-        if (!examResults || examResults.length === 0) {
+        if (!data || data.length === 0) {
             list.innerHTML = '<p style="color:#6b7280; font-size:0.9rem;">Nessun risultato ancora.</p>';
             return;
         }
 
-        // Calcola la media per ogni utente
-        const userStats = {};
-        
-        examResults.forEach(result => {
-            const userId = result.user_id;
-            if (!userStats[userId]) {
-                userStats[userId] = {
-                    scores: [],
-                    totalQuestions: result.total_questions || 20
-                };
-            }
-            userStats[userId].scores.push(result.score || 0);
-        });
-
-        // Calcola la media aritmetica per ogni utente
-        const leaderboardData = [];
-        
-        for (const [userId, stats] of Object.entries(userStats)) {
-            const avgScore = stats.scores.reduce((sum, score) => sum + score, 0) / stats.scores.length;
-            const roundedAvg = Math.round(avgScore * 10) / 10; // Arrotonda a 1 decimale
-            
-            leaderboardData.push({
-                user_id: userId,
-                average_score: roundedAvg,
-                total_tests: stats.scores.length
-            });
-        }
-
-        // Ordina per media decrescente, poi per numero di test (in caso di parità, chi ha più test è più in alto)
-        leaderboardData.sort((a, b) => {
-            if (Math.abs(b.average_score - a.average_score) < 0.01) {
-                // Stessa media (con tolleranza per floating point), ordina per numero di test decrescente
-                return b.total_tests - a.total_tests;
-            }
-            // Altrimenti ordina per media decrescente
-            return b.average_score - a.average_score;
-        });
-
-        // Prendi i top 5
-        const topUsers = leaderboardData.slice(0, 5);
-        const userIds = topUsers.map(u => u.user_id);
-
-        // Recupera username e avatar dalla tabella leaderboard (che ha i nickname corretti)
-        const { data: leaderboardUsers, error: leaderboardError } = await supabaseClient
-            .from('leaderboard')
-            .select('user_id, username, avatar_seed, avatar_color')
-            .in('user_id', userIds);
-
-        // Crea una mappa per username e avatar per user_id dalla tabella leaderboard
-        const userInfoMap = {};
-        if (leaderboardUsers) {
-            leaderboardUsers.forEach(row => {
-                if (row.username && row.avatar_seed && row.avatar_color) {
-                    userInfoMap[row.user_id] = {
-                        username: row.username,
-                        avatar_seed: row.avatar_seed,
-                        avatar_color: row.avatar_color
-                    };
-                }
-            });
-        }
-
-        // Se mancano alcuni utenti nella tabella leaderboard, prova a recuperarli dai metadata dell'utente corrente
-        for (const userId of userIds) {
-            if (!userInfoMap[userId] && currentUser && currentUser.id === userId) {
-                const meta = currentUser.user_metadata || {};
-                if (meta.username && meta.username.trim()) {
-                    userInfoMap[userId] = {
-                        username: meta.username.trim(),
-                        avatar_seed: meta.avatar_seed || 'default',
-                        avatar_color: meta.avatar_color || 'f3f4f6'
-                    };
-                }
-            }
-            
-            // Fallback finale se non abbiamo trovato nulla
-            if (!userInfoMap[userId]) {
-                userInfoMap[userId] = {
-                    username: `Utente ${userId.substring(0, 8)}`,
-                    avatar_seed: 'default',
-                    avatar_color: 'f3f4f6'
-                };
-            }
-        }
-
-        // Combina i dati
-        const leaderboardWithUserInfo = topUsers.map(user => {
-            const userInfo = userInfoMap[user.user_id];
-            return {
-                ...user,
-                username: userInfo.username,
-                avatar_seed: userInfo.avatar_seed,
-                avatar_color: userInfo.avatar_color
-            };
-        });
-
-        // Renderizza la classifica
         list.innerHTML = '';
-        leaderboardWithUserInfo.forEach((row, index) => {
+        data.forEach((row, index) => {
             const div = document.createElement('div');
             div.className = 'leaderboard-row';
             
@@ -392,11 +296,10 @@ async function loadLeaderboard(containerId = 'leaderboard-list') {
                     <img src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=${avatarSeed}&backgroundColor=${avatarColor}" style="width:28px; height:28px; border-radius:50%; background:#fff; border:1px solid #ddd;">
                     <span style="font-weight:500;">${row.username || 'Anonimo'}</span>
                 </div>
-                <strong>${row.average_score.toFixed(1)}/20</strong>
+                <strong>${row.best_score || 0}/20</strong>
             `;
             list.appendChild(div);
         });
-
     } catch (err) {
         console.error('Errore caricamento leaderboard:', err);
         list.innerHTML = '<p>Errore caricamento classifica.</p>';
@@ -625,34 +528,12 @@ async function showResults() {
     if (currentUser && supabaseClient && savingStatus) {
         savingStatus.textContent = "Salvataggio risultati nel cloud...";
         
-        // Recupera username e avatar dai metadata dell'utente
-        const meta = currentUser.user_metadata || {};
-        const username = meta.username || 'Utente';
-        const avatarSeed = meta.avatar_seed || 'default';
-        const avatarColor = meta.avatar_color || 'f3f4f6';
-        
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/809cc897-1759-4ea9-96df-56f6b2bf20a2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:633',message:'Before insert - payload data',data:{userId:currentUser.id,hasUsername:!!username,hasAvatarSeed:!!avatarSeed,hasAvatarColor:!!avatarColor,score:score,totalQuestions:total,isPerfect:score===total},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
-        
-        const insertPayload = {
+        supabaseClient.from('exam_results').insert({
             user_id: currentUser.id,
-            username: username,
-            avatar_seed: avatarSeed,
-            avatar_color: avatarColor,
             score: score,
             total_questions: total,
             is_perfect: (score === total)
-        };
-        
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/809cc897-1759-4ea9-96df-56f6b2bf20a2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:643',message:'Insert payload structure',data:{keys:Object.keys(insertPayload),payload:insertPayload},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-        
-        supabaseClient.from('exam_results').insert(insertPayload).then(({ error }) => {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/809cc897-1759-4ea9-96df-56f6b2bf20a2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:648',message:'Insert result',data:{hasError:!!error,errorMessage:error?.message,errorCode:error?.code,errorDetails:error},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-            // #endregion
+        }).then(({ error }) => {
             if (!error) {
                 savingStatus.textContent = "Risultati salvati con successo! ✅";
                 savingStatus.style.color = "#166534";
