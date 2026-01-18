@@ -4,19 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cloud Computing Exam Prep</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="app-container">
         
-        <div id="start-screen" class="card fade-in">
-            <h1>Simulatore test moodle</h1>
-            <p class="subtitle">Mettiti alla prova con 20 domande casuali tratte dagli esami.</p>
+        <div id="login-screen" class="card fade-in">
+            <h1>Benvenuto, Ingegnere! ☁️</h1>
+            <p class="subtitle">Identificati per accedere al simulatore.</p>
+            
+            <div class="login-form">
+                <input type="text" id="username-input" placeholder="Scegli un Nickname (es. CloudNinja)" maxlength="15" autocomplete="off">
+                
+                <p style="margin: 20px 0 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);">Scegli il tuo Eroe:</p>
+                <div id="avatar-grid" class="avatar-grid">
+                    </div>
+
+                <p style="margin: 15px 0 5px; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);">PIN Segreto (4 cifre):</p>
+                <div class="pin-container">
+                    <input type="password" id="pin-input" placeholder="1234" maxlength="4" inputmode="numeric">
+                </div>
+
+                <button id="login-btn" class="btn-primary" style="margin-top: 20px;">ENTRA / REGISTRATI</button>
+                <p id="login-error" class="error-msg hidden"></p>
+            </div>
+        </div>
+
+        <div id="start-screen" class="card hidden">
+            <div class="user-profile-header">
+                <img id="current-user-avatar" src="" alt="Avatar" class="avatar-small">
+                <div style="flex-grow: 1;">
+                    <h2 id="welcome-msg" style="margin:0; font-size:1.1rem;">Ciao!</h2>
+                    <span class="logout-link" onclick="logout()">Esci</span>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <h1>Simulatore Esame</h1>
+            <p class="subtitle">20 domande adattive basate sui tuoi errori.</p>
             <button id="start-btn" class="btn-primary">Inizia Esame</button>
+
+            <div class="leaderboard-container">
+                <h3>🏆 Top 5 Cloud Architects</h3>
+                <div id="leaderboard-list">
+                    <p style="font-size: 0.9rem; color: #6b7280;">Caricamento classifica...</p>
+                </div>
+            </div>
         </div>
 
         <div id="quiz-screen" class="hidden">
@@ -46,19 +86,39 @@
                 <button id="prev-btn" class="btn-secondary hidden" style="width: auto; margin-top:0;">⬅ Indietro</button>
                 <button id="next-btn" class="btn-primary hidden" style="width: auto;">Prossima ➡</button>
             </div>
-        </div> <div id="result-screen" class="card hidden">
-            <div id="result-icon" style="font-size: 4rem; margin-bottom: 1rem;"></div>
-            <h1 id="result-title">Esame Completato</h1>
-            <p id="result-message"></p>
-            <div class="score-display">
-                <span id="final-score">0</span> / <span id="total-questions-display">20</span>
+        </div> 
+
+        <div id="result-screen" class="result-container hidden">
+            <div class="result-content">
+                <div class="result-summary">
+                    <div id="result-icon" style="font-size: 4rem; margin-bottom: 1rem;"></div>
+                    <h1 id="result-title">Calcolo risultati...</h1>
+                    <p id="result-message"></p>
+                    
+                    <div class="score-display">
+                        <span id="final-score">0</span> / <span id="total-questions-display">20</span>
+                    </div>
+                    
+                    <p id="percentage-display"></p>
+                    
+                    <p id="saving-status" style="font-size: 0.85rem; color: #6b7280; margin-top: 15px; font-style: italic;">In attesa...</p>
+                    
+                    <button onclick="location.reload()" class="btn-secondary">Torna alla Home</button>
+                </div>
+                
+                <div class="result-leaderboard">
+                    <h3>🏆 Classifica Generale</h3>
+                    <div id="result-leaderboard-list">
+                        <p style="font-size: 0.9rem; color: #6b7280;">Caricamento classifica...</p>
+                    </div>
+                </div>
             </div>
-            <p id="percentage-display"></p>
-            <button onclick="location.reload()" class="btn-secondary">Riprova Esame</button>
         </div>
 
     </div>
 
+    <!-- CRITICAL: Load Supabase CDN BEFORE data.js and script.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="data.js"></script>
     <script src="script.js"></script>
 </body>

@@ -15,17 +15,23 @@
     --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+}
 
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-color);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    background-attachment: fixed;
     color: var(--text-primary);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     padding: 20px;
+    line-height: 1.6;
 }
 
 .app-container {
@@ -41,116 +47,717 @@ body {
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-lg);
     text-align: center;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-h1 { font-size: 1.8rem; margin-bottom: 0.5rem; font-weight: 700; }
-h2 { font-size: 1.25rem; margin-bottom: 1.5rem; font-weight: 600; line-height: 1.5; color: #1f2937; }
-.subtitle { color: var(--text-secondary); margin-bottom: 2rem; }
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+}
 
-/* --- 3. BOTTONI --- */
+h1 { 
+    font-size: 1.8rem; 
+    margin-bottom: 0.5rem; 
+    font-weight: 700; 
+    color: var(--text-primary);
+}
+
+h2 { 
+    font-size: 1.25rem; 
+    margin-bottom: 1.5rem; 
+    font-weight: 600; 
+    line-height: 1.5; 
+    color: #1f2937; 
+}
+
+h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.subtitle { 
+    color: var(--text-secondary); 
+    margin-bottom: 2rem; 
+    font-size: 0.95rem;
+}
+
+.divider { 
+    margin: 1.5rem 0; 
+    border: 0; 
+    border-top: 1px solid #e5e7eb; 
+}
+
+/* --- 3. INPUT FORM (LOGIN) --- */
+.login-form input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+    background-color: #f9fafb;
+    font-family: 'Inter', sans-serif;
+}
+
+.login-form input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.login-form input::placeholder {
+    color: #9ca3af;
+}
+
+.pin-container {
+    max-width: 150px;
+    margin: 0 auto;
+}
+
+.error-msg { 
+    color: var(--error-text); 
+    font-size: 0.9rem; 
+    margin-top: 10px; 
+    font-weight: 500; 
+    padding: 8px;
+    background-color: var(--error-bg);
+    border-radius: 8px;
+}
+
+/* --- 4. AVATAR SYSTEM (FUN EMOJI) --- */
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+    justify-items: center;
+    max-width: 100%;
+}
+
+/* Contenitore singolo (Img + Nome) */
+.avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    width: 80px;
+    transition: transform 0.2s ease;
+    padding: 5px;
+}
+
+.avatar-container:hover { 
+    transform: translateY(-3px); 
+}
+
+.avatar-option {
+    width: 60px; 
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    background: #f3f4f6; /* Fallback */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+/* Stato Selezionato */
+.avatar-container.selected .avatar-option {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2); /* Effetto focus */
+    transform: scale(1.1);
+}
+
+.avatar-container.selected .avatar-name {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.avatar-name {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.2;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+/* --- 5. HEADER PROFILO & CLASSIFICA --- */
+.user-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-align: left;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.avatar-small {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logout-link {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.logout-link:hover { 
+    color: var(--error-text); 
+}
+
+.leaderboard-container {
+    margin-top: 30px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #bae6fd;
+    text-align: left;
+}
+
+.leaderboard-container h3 {
+    margin-bottom: 15px;
+    font-size: 1rem;
+    color: #0369a1;
+    text-align: center;
+    font-weight: 600;
+}
+
+.leaderboard-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0f2fe;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.leaderboard-row:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.leaderboard-row:last-child { 
+    border-bottom: none; 
+}
+
+.rank-badge { 
+    font-weight: bold; 
+    width: 30px; 
+    display: inline-block; 
+    text-align: center; 
+}
+
+/* --- 6. BOTTONI GENERALI --- */
 .btn-primary, .btn-secondary {
     display: inline-block;
     width: 100%;
-    padding: 1rem;
+    padding: 1rem 1.5rem;
     border: none;
     border-radius: 12px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
 }
 
-.btn-primary { background-color: var(--primary-color); color: white; }
-.btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+.btn-primary { 
+    background-color: var(--primary-color); 
+    color: white; 
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
 
-.btn-secondary { background-color: #e5e7eb; color: var(--text-primary); margin-top: 1rem; }
-.btn-secondary:hover { background-color: #d1d5db; }
+.btn-primary:hover { 
+    background-color: var(--primary-hover); 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+}
 
-/* --- 4. GRIGLIA OPZIONI --- */
-.options-grid { display: flex; flex-direction: column; gap: 12px; }
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-primary:disabled { 
+    background-color: #93c5fd; 
+    cursor: not-allowed; 
+    transform: none; 
+    box-shadow: none;
+}
+
+.btn-secondary { 
+    background-color: #e5e7eb; 
+    color: var(--text-primary); 
+    margin-top: 1rem; 
+}
+
+.btn-secondary:hover { 
+    background-color: #d1d5db; 
+    transform: translateY(-1px);
+}
+
+/* --- 7. GRIGLIA QUIZ --- */
+.options-grid { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+}
 
 .option-btn {
     background: white;
     border: 2px solid #e5e7eb;
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     border-radius: 12px;
     text-align: left;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     color: var(--text-primary);
+    min-height: 50px;
+    display: flex;
+    align-items: center;
 }
 
-.option-btn:hover { border-color: var(--primary-color); background-color: #eff6ff; }
-.option-btn.selected { border-color: var(--primary-color); background-color: #eff6ff; }
+.option-btn:hover { 
+    border-color: var(--primary-color); 
+    background-color: #eff6ff; 
+    transform: translateX(4px);
+}
 
-/* Stati Feedback (Verde/Rosso) */
-.option-btn.correct { border-color: var(--success-text); background-color: var(--success-bg); color: var(--success-text); }
-.option-btn.wrong { border-color: var(--error-text); background-color: var(--error-bg); color: var(--error-text); opacity: 0.7; }
+.option-btn.selected { 
+    border-color: var(--primary-color); 
+    background-color: #eff6ff; 
+}
 
-/* --- 5. AREA FEEDBACK --- */
+/* Feedback */
+.option-btn.correct { 
+    border-color: var(--success-text); 
+    background-color: var(--success-bg); 
+    color: var(--success-text); 
+}
+
+.option-btn.wrong { 
+    border-color: var(--error-text); 
+    background-color: var(--error-bg); 
+    color: var(--error-text); 
+    opacity: 0.8; 
+}
+
 .feedback-box {
     margin-top: 1.5rem;
     padding: 1.5rem;
     border-radius: 12px;
     text-align: left;
-    background-color: #f8fafc;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border: 1px solid #e2e8f0;
     animation: slideUp 0.3s ease-out;
 }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-.feedback-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; font-size: 1.1rem; }
-#feedback-text { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem; }
+@keyframes slideUp { 
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    } 
+}
 
-/* --- 6. PROGRESS BAR E INFO --- */
-.progress-container { width: 100%; height: 6px; background-color: #e5e7eb; border-radius: 3px; margin-bottom: 1rem; overflow: hidden; }
-.progress-bar { height: 100%; background-color: var(--primary-color); width: 0%; transition: width 0.3s ease; }
-.header-stats { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; font-weight: 600; }
+.feedback-header { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    margin-bottom: 0.5rem; 
+    font-size: 1.1rem; 
+    font-weight: 600;
+}
 
-/* --- 7. RISULTATI --- */
-.score-display { font-size: 3rem; font-weight: 800; color: var(--primary-color); margin: 1rem 0; }
-#result-icon { font-size: 4rem; margin-bottom: 1rem; }
+#feedback-text { 
+    font-size: 0.95rem; 
+    color: var(--text-secondary); 
+    line-height: 1.6; 
+    margin-bottom: 1rem; 
+}
 
-/* --- 8. NAVIGAZIONE (SOLUZIONE FLEXBOX DEFINITIVA) --- */
+/* --- 8. PROGRESS BAR --- */
+.progress-container { 
+    width: 100%; 
+    height: 8px; 
+    background-color: #e5e7eb; 
+    border-radius: 4px; 
+    margin-bottom: 1rem; 
+    overflow: hidden; 
+}
+
+.progress-bar { 
+    height: 100%; 
+    background: linear-gradient(90deg, var(--primary-color) 0%, #60a5fa 100%);
+    width: 0%; 
+    transition: width 0.3s ease; 
+    border-radius: 4px;
+}
+
+.header-stats { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 0.85rem; 
+    color: var(--text-secondary); 
+    margin-bottom: 1rem; 
+    font-weight: 600; 
+}
+
+/* --- 9. RISULTATI --- */
+.result-container {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+}
+
+.result-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+}
+
+.result-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.result-summary {
+    text-align: center;
+}
+
+.result-leaderboard {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #bae6fd;
+    text-align: left;
+}
+
+.result-leaderboard h3 {
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    color: #0369a1;
+    text-align: center;
+    font-weight: 600;
+}
+
+.score-display { 
+    font-size: 3rem; 
+    font-weight: 800; 
+    color: var(--primary-color); 
+    margin: 1.5rem 0; 
+}
+
+#result-icon { 
+    font-size: 4rem; 
+    margin-bottom: 1rem; 
+    animation: bounce 0.6s ease;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* --- 10. NAVIGAZIONE (FLEXBOX FIX) --- */
 .navigation-area {
-    display: flex;          /* Usa Flexbox per allineare */
+    display: flex;
     width: 100%;
     margin-top: 20px;
     min-height: 50px;
-    align-items: center;    /* Centra verticalmente i bottoni */
+    align-items: center;
+    gap: 10px;
 }
 
-/* Tasto Indietro */
 #prev-btn {
-    /* Stile specifico */
     background-color: transparent;
     border: 1px solid #d1d5db;
     color: var(--text-secondary);
-    
-    /* Posizionamento */
-    width: auto !important; /* IMPORTANTE: Sovrascrive il 100% width generico */
-    margin-right: auto;     /* Opzionale, ma aiuta la stabilità */
-    margin-top: 0;          /* Rimuove il margine ereditato da btn-secondary */
+    width: auto !important; 
+    margin-right: auto;
+    margin-top: 0;
+    padding: 0.75rem 1.25rem;
 }
 
-#prev-btn:hover {
-    background-color: #f3f4f6;
-    border-color: var(--text-secondary);
+#prev-btn:hover { 
+    background-color: #f3f4f6; 
+    border-color: var(--text-secondary); 
 }
 
-/* Tasto Prossima */
 #next-btn {
-    /* IL SEGRETO È QUI: margin-left: auto spinge il bottone tutto a destra */
-    margin-left: auto;      
-    
-    /* Posizionamento */
-    width: auto !important; /* IMPORTANTE: Deve essere auto, non 100% */
-    margin-top: 0;          /* Rimuove margini indesiderati */
+    margin-left: auto; /* Spinge a destra */
+    width: auto !important;
+    margin-top: 0;
+    padding: 0.75rem 1.5rem;
 }
 
-/* --- 9. UTILITIES --- */
-.hidden { display: none !important; }
-.fade-in { animation: fadeIn 0.5s ease-in; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* --- 11. UTILITIES --- */
+.hidden { 
+    display: none !important; 
+}
+
+.fade-in { 
+    animation: fadeIn 0.5s ease-in; 
+}
+
+@keyframes fadeIn { 
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    } 
+}
+
+/* --- 12. RESPONSIVE DESIGN (Mobile-First Approach) --- */
+
+/* Mobile (default - già ottimizzato) */
+
+/* Tablet (768px e superiori) */
+@media (min-width: 768px) {
+    .app-container {
+        max-width: 700px;
+    }
+    
+    .card {
+        padding: 2.5rem;
+    }
+    
+    .result-content {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 2rem;
+    }
+    
+    .result-summary {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .result-leaderboard {
+        flex: 1;
+        min-width: 0;
+        max-width: 400px;
+    }
+    
+    .avatar-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+    }
+    
+    .options-grid {
+        gap: 15px;
+    }
+    
+    .option-btn {
+        padding: 1.25rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .leaderboard-container {
+        padding: 25px;
+    }
+    
+    .navigation-area {
+        justify-content: space-between;
+    }
+    
+    #prev-btn, #next-btn {
+        min-width: 140px;
+    }
+}
+
+/* Desktop (1024px e superiori) */
+@media (min-width: 1024px) {
+    .app-container {
+        max-width: 900px;
+    }
+    
+    body {
+        padding: 30px;
+    }
+    
+    .card {
+        padding: 3rem;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    .result-content {
+        gap: 3rem;
+    }
+    
+    .result-leaderboard {
+        max-width: 450px;
+        padding: 25px;
+    }
+    
+    .score-display {
+        font-size: 3.5rem;
+    }
+    
+    .avatar-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 25px;
+    }
+    
+    .avatar-container {
+        width: 90px;
+    }
+    
+    .avatar-option {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .options-grid {
+        gap: 16px;
+    }
+    
+    .option-btn {
+        padding: 1.5rem 2rem;
+        font-size: 1.05rem;
+        min-height: 60px;
+    }
+    
+    .progress-container {
+        height: 10px;
+    }
+    
+    .header-stats {
+        font-size: 0.95rem;
+    }
+    
+    .leaderboard-container {
+        padding: 30px;
+    }
+    
+    .leaderboard-row {
+        padding: 12px 0;
+        font-size: 1rem;
+    }
+    
+    .navigation-area {
+        gap: 15px;
+    }
+    
+    #prev-btn, #next-btn {
+        padding: 1rem 2rem;
+        font-size: 1.05rem;
+    }
+}
+
+/* Mobile Small (max 640px) */
+@media (max-width: 640px) {
+    body {
+        padding: 15px;
+    }
+    
+    .card {
+        padding: 1.5rem;
+    }
+    
+    .result-content {
+        padding: 1.5rem;
+    }
+    
+    .result-leaderboard {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    h2 {
+        font-size: 1.1rem;
+    }
+    
+    .avatar-grid {
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+        gap: 10px;
+    }
+    
+    .avatar-container {
+        width: 70px;
+    }
+    
+    .avatar-option {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .score-display {
+        font-size: 2.5rem;
+    }
+    
+    .navigation-area {
+        flex-wrap: wrap;
+    }
+    
+    #prev-btn, #next-btn {
+        width: 100% !important;
+        margin: 5px 0 !important;
+    }
+    
+    .option-btn {
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .leaderboard-row {
+        font-size: 0.85rem;
+        padding: 8px 0;
+    }
+}
+
+/* Landscape orientation per mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+    .app-container {
+        max-width: 800px;
+    }
+    
+    .result-content {
+        flex-direction: row;
+        gap: 1.5rem;
+    }
+    
+    .result-summary {
+        flex: 1;
+    }
+    
+    .result-leaderboard {
+        flex: 1;
+        max-width: 350px;
+    }
+}
