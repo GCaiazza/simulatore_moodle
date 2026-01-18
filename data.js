@@ -579,7 +579,7 @@ const quizData = [
     "id": 49,
     "domanda": "Un'organizzazione vuole misurare tutto nell'ambito della sua nuova filosofia DevOps. Cosa dovr\u00e0 monitorare?",
     "opzioni": [
-      "Un'organizzazione vuole misurare tutto nell'ambito della sua",
+      "L'affidabilit\u00e0 e la salute dei sistemi.",
       "La velocit\u00e0 del processo di adozione del cloud.",
       "La soddisfazione e la felicit\u00e0 dei dipendenti.",
       "Il rischio e la ricompensa dei propri investimenti."
@@ -777,17 +777,5 @@ const quizData = [
     ],
     "risposta_corretta": "UG9ydGFsZSBwZXIgc3ZpbHVwcGF0b3Jp",
     "spiegazione": "Il Developer Portal \u00e8 la faccia pubblica delle tue API. \u00c8 un sito web generato automaticamente dove gli sviluppatori esterni possono leggere la documentazione, testare le API e, soprattutto, ottenere le chiavi di accesso (API Key)."
-  },
-  {
-    "id": 66,
-    "domanda": "Quale tra le seguenti categorie dei piani di App Service offre la funzionalit\u00e0 massima di scale-out?",
-    "opzioni": [
-      "Calcolo condiviso",
-      "Calcolo isolato",
-      "Calcolo dedicato",
-      "Calcolo ad alte prestazioni"
-    ],
-    "risposta_corretta": "Q2FsY29sbyBpc29sYXRv",
-    "spiegazione": "Il piano 'Isolated' (ASE - App Service Environment) gira su hardware dedicato e isolato in una rete virtuale privata. Offre le capacit\u00e0 di scalabilit\u00e0 pi\u00f9 elevate e sicure rispetto ai piani condivisi o standard."
   }
 ];
