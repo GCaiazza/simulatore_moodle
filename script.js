@@ -318,44 +318,78 @@ async function loadLeaderboard(containerId = 'leaderboard-list') {
         const topUsers = leaderboardData.slice(0, 5);
         const userIds = topUsers.map(u => u.user_id);
 
-        // Recupera username e avatar dal primo risultato di ogni utente (sono salvati in exam_results)
-        const { data: latestResults, error: latestError } = await supabaseClient
-            .from('exam_results')
-            .select('user_id, username, avatar_seed, avatar_color')
-            .in('user_id', userIds)
-            .order('created_at', { ascending: false });
-
-        // Crea una mappa per username e avatar per user_id
+        // Recupera username e avatar per ogni utente
+        // Per ogni utente, cerca il primo username valido (non "Utente xxxxxx") nei suoi risultati
         const userInfoMap = {};
-        if (latestResults) {
-            latestResults.forEach(result => {
-                if (!userInfoMap[result.user_id]) {
-                    userInfoMap[result.user_id] = {
-                        username: result.username || `Utente ${result.user_id.substring(0, 8)}`,
-                        avatar_seed: result.avatar_seed || 'default',
-                        avatar_color: result.avatar_color || 'f3f4f6'
+        
+        for (const userId of userIds) {
+            // Per ogni utente, recupera tutti i suoi risultati e cerca un username valido
+            const { data: userResults } = await supabaseClient
+                .from('exam_results')
+                .select('username, avatar_seed, avatar_color')
+                .eq('user_id', userId)
+                .not('username', 'is', null)
+                .order('created_at', { ascending: false });
+            
+            if (userResults && userResults.length > 0) {
+                // Cerca il primo username che NON segue il pattern "Utente" + 8 caratteri hex
+                let validUsername = null;
+                let avatarSeed = 'default';
+                let avatarColor = 'f3f4f6';
+                
+                for (const result of userResults) {
+                    const username = result.username ? result.username.trim() : '';
+                    // Pattern: "Utente xxxxxxxx" (8 caratteri esadecimali)
+                    const isFallbackPattern = /^Utente [a-f0-9]{8}$/i.test(username);
+                    
+                    if (username && !isFallbackPattern) {
+                        // Trovato un username valido!
+                        validUsername = username;
+                        avatarSeed = result.avatar_seed || avatarSeed;
+                        avatarColor = result.avatar_color || avatarColor;
+                        break;
+                    } else if (username && !validUsername) {
+                        // Almeno salviamo il primo username trovato (anche se è fallback)
+                        validUsername = username;
+                        avatarSeed = result.avatar_seed || avatarSeed;
+                        avatarColor = result.avatar_color || avatarColor;
+                    }
+                }
+                
+                if (validUsername) {
+                    userInfoMap[userId] = {
+                        username: validUsername,
+                        avatar_seed: avatarSeed,
+                        avatar_color: avatarColor
                     };
                 }
-            });
-        }
-
-        // Se è l'utente corrente, usa i suoi metadata se non presenti nel DB
-        if (currentUser && !userInfoMap[currentUser.id]) {
-            const meta = currentUser.user_metadata || {};
-            userInfoMap[currentUser.id] = {
-                username: meta.username || 'Utente',
-                avatar_seed: meta.avatar_seed || 'default',
-                avatar_color: meta.avatar_color || 'f3f4f6'
-            };
+            }
+            
+            // Se è l'utente corrente e non abbiamo ancora trovato un username, usa i suoi metadata
+            if (!userInfoMap[userId] && currentUser && currentUser.id === userId) {
+                const meta = currentUser.user_metadata || {};
+                if (meta.username && meta.username.trim()) {
+                    userInfoMap[userId] = {
+                        username: meta.username.trim(),
+                        avatar_seed: meta.avatar_seed || 'default',
+                        avatar_color: meta.avatar_color || 'f3f4f6'
+                    };
+                }
+            }
+            
+            // Fallback finale se non abbiamo trovato nulla
+            if (!userInfoMap[userId]) {
+                userInfoMap[userId] = {
+                    username: `Utente ${userId.substring(0, 8)}`,
+                    avatar_seed: 'default',
+                    avatar_color: 'f3f4f6'
+                };
+            }
         }
 
         // Combina i dati
         const leaderboardWithUserInfo = topUsers.map(user => {
-            const userInfo = userInfoMap[user.user_id] || {
-                username: `Utente ${user.user_id.substring(0, 8)}`,
-                avatar_seed: 'default',
-                avatar_color: 'f3f4f6'
-            };
+            const userInfo = userInfoMap[user.user_id];
             return {
                 ...user,
                 username: userInfo.username,
