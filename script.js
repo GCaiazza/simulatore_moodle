@@ -318,68 +318,36 @@ async function loadLeaderboard(containerId = 'leaderboard-list') {
         const topUsers = leaderboardData.slice(0, 5);
         const userIds = topUsers.map(u => u.user_id);
 
-        // Recupera username e avatar per ogni utente
-        // Strategia: recupera TUTTI i risultati (anche senza username) e cerca il nickname valido
+        // Recupera username e avatar dalla tabella leaderboard (che ha i nickname corretti)
+        const { data: leaderboardUsers, error: leaderboardError } = await supabaseClient
+            .from('leaderboard')
+            .select('user_id, username, avatar_seed, avatar_color')
+            .in('user_id', userIds);
+
+        // Crea una mappa per username e avatar per user_id dalla tabella leaderboard
         const userInfoMap = {};
-        
-        for (const userId of userIds) {
-            // Recupera TUTTI i risultati di questo utente (anche quelli senza username)
-            const { data: userResults } = await supabaseClient
-                .from('exam_results')
-                .select('username, avatar_seed, avatar_color, created_at')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false });
-            
-            if (userResults && userResults.length > 0) {
-                // Cerca il primo username che NON segue il pattern "Utente" + 8 caratteri hex
-                let validUsername = null;
-                let avatarSeed = 'default';
-                let avatarColor = 'f3f4f6';
-                
-                for (const result of userResults) {
-                    const username = result.username ? result.username.trim() : '';
-                    
-                    if (username) {
-                        // Pattern: "Utente xxxxxxxx" (8 caratteri esadecimali)
-                        const isFallbackPattern = /^Utente [a-f0-9]{8}$/i.test(username);
-                        
-                        if (!isFallbackPattern) {
-                            // Trovato un username valido! Usalo
-                            validUsername = username;
-                            avatarSeed = result.avatar_seed || avatarSeed;
-                            avatarColor = result.avatar_color || avatarColor;
-                            break; // Prendi il primo valido trovato
-                        } else if (!validUsername) {
-                            // Almeno salviamo il primo username trovato (anche se è fallback) come backup
-                            validUsername = username;
-                            avatarSeed = result.avatar_seed || avatarSeed;
-                            avatarColor = result.avatar_color || avatarColor;
-                        }
-                    }
-                }
-                
-                // Se abbiamo trovato un username (anche se è fallback), usalo per ora
-                if (validUsername) {
-                    userInfoMap[userId] = {
-                        username: validUsername,
-                        avatar_seed: avatarSeed,
-                        avatar_color: avatarColor
+        if (leaderboardUsers) {
+            leaderboardUsers.forEach(row => {
+                if (row.username && row.avatar_seed && row.avatar_color) {
+                    userInfoMap[row.user_id] = {
+                        username: row.username,
+                        avatar_seed: row.avatar_seed,
+                        avatar_color: row.avatar_color
                     };
                 }
-            }
-            
-            // Se è l'utente corrente e non abbiamo ancora trovato un username valido, usa i suoi metadata
-            if (currentUser && currentUser.id === userId) {
+            });
+        }
+
+        // Se mancano alcuni utenti nella tabella leaderboard, prova a recuperarli dai metadata dell'utente corrente
+        for (const userId of userIds) {
+            if (!userInfoMap[userId] && currentUser && currentUser.id === userId) {
                 const meta = currentUser.user_metadata || {};
                 if (meta.username && meta.username.trim()) {
-                    // Se abbiamo già un username ma è il fallback, sovrascrivilo con il nickname reale
-                    if (!userInfoMap[userId] || /^Utente [a-f0-9]{8}$/i.test(userInfoMap[userId].username)) {
-                        userInfoMap[userId] = {
-                            username: meta.username.trim(),
-                            avatar_seed: meta.avatar_seed || userInfoMap[userId]?.avatar_seed || 'default',
-                            avatar_color: meta.avatar_color || userInfoMap[userId]?.avatar_color || 'f3f4f6'
-                        };
-                    }
+                    userInfoMap[userId] = {
+                        username: meta.username.trim(),
+                        avatar_seed: meta.avatar_seed || 'default',
+                        avatar_color: meta.avatar_color || 'f3f4f6'
+                    };
                 }
             }
             
@@ -671,20 +639,8 @@ async function showResults() {
             score: score,
             total_questions: total,
             is_perfect: (score === total)
-        }).then(async ({ error }) => {
+        }).then(({ error }) => {
             if (!error) {
-                // IMPORTANTE: Aggiorna anche tutti i vecchi record di questo utente che non hanno username valido
-                // Questo assicura che tutti i record mostrino il nickname corretto
-                await supabaseClient
-                    .from('exam_results')
-                    .update({ 
-                        username: username,
-                        avatar_seed: avatarSeed,
-                        avatar_color: avatarColor
-                    })
-                    .eq('user_id', currentUser.id)
-                    .or(`username.is.null,username.eq.Utente,username.ilike.Utente%`);
-                
                 savingStatus.textContent = "Risultati salvati con successo! ✅";
                 savingStatus.style.color = "#166534";
                 
