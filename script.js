@@ -631,7 +631,11 @@ async function showResults() {
         const avatarSeed = meta.avatar_seed || 'default';
         const avatarColor = meta.avatar_color || 'f3f4f6';
         
-        supabaseClient.from('exam_results').insert({
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/809cc897-1759-4ea9-96df-56f6b2bf20a2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:633',message:'Before insert - payload data',data:{userId:currentUser.id,hasUsername:!!username,hasAvatarSeed:!!avatarSeed,hasAvatarColor:!!avatarColor,score:score,totalQuestions:total,isPerfect:score===total},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
+        
+        const insertPayload = {
             user_id: currentUser.id,
             username: username,
             avatar_seed: avatarSeed,
@@ -639,7 +643,16 @@ async function showResults() {
             score: score,
             total_questions: total,
             is_perfect: (score === total)
-        }).then(({ error }) => {
+        };
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/809cc897-1759-4ea9-96df-56f6b2bf20a2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:643',message:'Insert payload structure',data:{keys:Object.keys(insertPayload),payload:insertPayload},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
+        
+        supabaseClient.from('exam_results').insert(insertPayload).then(({ error }) => {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/809cc897-1759-4ea9-96df-56f6b2bf20a2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:648',message:'Insert result',data:{hasError:!!error,errorMessage:error?.message,errorCode:error?.code,errorDetails:error},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
             if (!error) {
                 savingStatus.textContent = "Risultati salvati con successo! ✅";
                 savingStatus.style.color = "#166534";
